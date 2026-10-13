@@ -1,0 +1,18 @@
+autostart = "@PLUGIN_ES1BENCHMARKSYNC_AUTOSTART@"
+
+# Cold-startup benchmark monitor configuration.
+# Set notifyhost to the IP of the machine running es1_benchmark_coldstart.py.
+# Set thunderhost to the IP(s) of this ES1 device (so the Python server knows
+# where to connect back). Multiple comma-separated candidates are supported -
+# the Python server probes each in order and uses the first one that responds,
+# so this survives the device's IP changing between test runs.
+configuration = {
+    "root": {
+        "mode": "@PLUGIN_ES1BENCHMARKSYNC_MODE@",
+        "locator": "lib@PLUGIN_IMPLEMENTATION@.so"
+    },
+    "notifyhost":  "10.0.0.154",
+    "notifyport":  8080,
+    "thunderhost": "10.0.0.8,10.0.0.202",
+    "thunderport": 9998
+}
