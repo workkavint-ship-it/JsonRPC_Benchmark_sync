@@ -1,0 +1,54 @@
+# Existing ES1Benchmark on-device client configuration.
+# (the on-demand unit, run after Thunder is up). es1bench-coldstart.service
+# has its own separate file, /opt/es1-coldstart.config (see
+# client/es1-coldstart.config.default) - the two can't share one file since
+# each needs a different 'mode' value.
+# Installed to /opt/es1benchmark.config - edit in place and re-run
+# `systemctl start es1bench.service` to pick up changes; no rebuild needed.
+
+# plugin selects the Thunder JSON-RPC plugin and method_suffix selects its API naming convention.
+plugin=ES1Benchmark
+method_suffix=
+
+# coldstart: wait for Thunder's JSON-RPC port to come up before running.
+# warm:      assume Thunder is already up and run immediately.
+mode=warm
+
+# ws:   WebSocket JSON-RPC (ws://host:port/jsonrpc)
+# http: HTTP JSON-RPC (http://host:port/jsonrpc)
+transport=ws
+
+# session: one persistent HTTP connection reused for all iterations.
+# oneshot: fresh TCP connection per request (curl-style). Ignored for transport=ws.
+http_mode=session
+
+# single:   run only the one tier named by 'size' below.
+# multiple: sweep eve# multiple: sweep every tier (500B, 5KB, 50KB, 150KB, 500KB, 1MB, 4MB).
+tier=multiple
+size=5KB
+
+iterations=20
+warmup=3
+
+# One value runs a single client count. A comma-separated list sweeps each
+# one in turn against every test, e.g. "32,8,1" - matching the Python
+# matrix runner's CLIENT_COUNTS sweep, all in this one run.
+clients=32,8,1
+
+skip_scalars=false
+
+host=127.0.0.1
+port=9998
+timeout_s=30
+
+# Measure WPEFramework RSS automatically through /proc and its discovered
+# cgroup. The PID, cgroup path, baseline, and peak are selected at runtime.
+memory_measure=true
+memory_sample_ms=10
+coldstart_timeout_s=120
+# In addition to stdout, also mirror every JSONL result line to this file.
+# Truncated at startup, so it always holds only the most recent run's
+# results, not a growing history across repeated invocations.
+result_file_enabled=false
+result_file=/opt/result.json
+

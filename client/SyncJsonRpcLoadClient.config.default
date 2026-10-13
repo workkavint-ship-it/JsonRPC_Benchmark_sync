@@ -1,4 +1,7 @@
-# Separate configurable load client configuration.
+# Shared configurable load client configuration.
+plugin=ES1BenchmarkSync
+method_suffix=sync
+
 mode=warm
 transport=ws
 http_mode=session

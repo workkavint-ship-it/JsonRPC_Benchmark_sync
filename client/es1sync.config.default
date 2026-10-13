@@ -1,10 +1,14 @@
-# ES1Bench on-device client configuration - used only by es1bench.service
+# ES1BenchmarkSync on-device client configuration.
 # (the on-demand unit, run after Thunder is up). es1bench-coldstart.service
 # has its own separate file, /opt/es1-coldstart.config (see
 # client/es1-coldstart.config.default) - the two can't share one file since
 # each needs a different 'mode' value.
-# Installed to /opt/es1.config - edit in place and re-run
+# Installed to /opt/es1sync.config - edit in place and re-run
 # `systemctl start es1bench.service` to pick up changes; no rebuild needed.
+
+# plugin selects the Thunder JSON-RPC plugin and method_suffix selects its API naming convention.
+plugin=ES1BenchmarkSync
+method_suffix=sync
 
 # coldstart: wait for Thunder's JSON-RPC port to come up before running.
 # warm:      assume Thunder is already up and run immediately.

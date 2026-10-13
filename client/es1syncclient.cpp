@@ -155,6 +155,8 @@ static bool HasError(const std::string& resp) {
 // ===========================================================================
 
 struct Config {
+    std::string plugin         = "ES1BenchmarkSync";
+    std::string method_suffix  = "sync";
     std::string mode        = "warm";     // coldstart | warm
     std::string transport   = "ws";       // ws | http
     std::string http_mode   = "session";  // session | oneshot  (transport=http only)
@@ -200,7 +202,9 @@ static bool LoadConfig(const std::string& path, Config* cfgOut) {
         if (eq == std::string::npos) continue;
         std::string key = Trim(t.substr(0, eq));
         std::string val = Trim(t.substr(eq + 1));
-        if (key == "mode") cfg.mode = val;
+        if (key == "plugin") cfg.plugin = val;
+        else if (key == "method_suffix") cfg.method_suffix = val;
+        else if (key == "mode") cfg.mode = val;
         else if (key == "transport") cfg.transport = val;
         else if (key == "http_mode") cfg.http_mode = val;
         else if (key == "tier") cfg.tier = val;
@@ -610,10 +614,11 @@ private:
 
 static std::atomic<long long> g_requestId{1};
 
-static std::string BuildRequest(const std::string& method, const std::string& paramsJson) {
+static std::string BuildRequest(const Config& cfg, const std::string& method, const std::string& paramsJson) {
     std::ostringstream o;
     o << "{\"jsonrpc\":\"2.0\",\"id\":" << g_requestId.fetch_add(1)
-    << ",\"method\":\"ES1BenchmarkSync.1." << method << "sync\",\"params\":" << paramsJson << "}";
+    << ",\"method\":\"" << cfg.plugin << ".1." << method << cfg.method_suffix
+    << "\",\"params\":" << paramsJson << "}";
     return o.str();
 }
 
@@ -1302,7 +1307,7 @@ static ClientResult RunOneClient(const Config& cfg, const TestCase& test, Barrie
         http.reset(new HttpClient(cfg.host, cfg.port, cfg.timeout_s, oneShot));
     }
 
-    std::string request = BuildRequest(test.method, test.paramsJson);
+    std::string request = BuildRequest(cfg, test.method, test.paramsJson);
 
     auto doCall = [&](std::string* resp) -> bool {
         if (ws) return ws->SendText(request) && ws->RecvText(resp);
@@ -1354,7 +1359,7 @@ static double RunMeasureCalibration(const Config& cfg, const std::string& measur
     } else {
         http.reset(new HttpClient(cfg.host, cfg.port, cfg.timeout_s, /*oneShot=*/false));
     }
-    std::string req = BuildRequest(measureMethod, measureParams);
+    std::string req = BuildRequest(cfg, measureMethod, measureParams);
     std::string resp;
     bool ok = ws ? (ws->SendText(req) && ws->RecvText(&resp)) : http->Post(req, &resp);
     if (!ok || HasError(resp)) return -1;
@@ -1464,7 +1469,7 @@ static void RunTest(const Config& cfg, const TestCase& test, int clientCount) {
 // ===========================================================================
 
 static bool IsBenchmarkReady(const Config& cfg) {
-    std::string request = BuildRequest("getuint64", "{}");
+    std::string request = BuildRequest(cfg, "getuint64", "{}");
     std::string response;
 
     if (cfg.transport == "ws") {

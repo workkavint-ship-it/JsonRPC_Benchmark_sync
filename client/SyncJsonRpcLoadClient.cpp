@@ -34,6 +34,8 @@
 #include <vector>
 
 struct Config {
+    std::string plugin = "ES1BenchmarkSync";
+    std::string methodSuffix = "sync";
     std::string mode = "warm";
     std::string transport = "ws";
     std::string httpMode = "session";
@@ -91,7 +93,9 @@ static bool LoadConfig(const std::string& path, Config* config) {
         if (separator == std::string::npos) continue;
         const std::string key = Trim(item.substr(0, separator));
         const std::string value = Trim(item.substr(separator + 1));
-        if (key == "mode") config->mode = value;
+        if (key == "plugin") config->plugin = value;
+        else if (key == "method_suffix") config->methodSuffix = value;
+        else if (key == "mode") config->mode = value;
         else if (key == "transport") config->transport = value;
         else if (key == "http_mode") config->httpMode = value;
         else if (key == "test_scope") config->scope = value;
@@ -449,10 +453,11 @@ private:
     int fd_ = -1;
 };
 
-static std::string BuildRequest(const TestCase& test) {
+static std::string BuildRequest(const Config& config, const TestCase& test) {
     std::ostringstream output;
     output << "{\"jsonrpc\":\"2.0\",\"id\":" << requestId.fetch_add(1)
-           << ",\"method\":\"ES1BenchmarkSync.1." << test.method << "sync\",\"params\":" << test.params << "}";
+           << ",\"method\":\"" << config.plugin << ".1." << test.method
+           << config.methodSuffix << "\",\"params\":" << test.params << "}";
     return output.str();
 }
 
@@ -646,7 +651,7 @@ static RunStats RunTest(const Config& config, const TestCase& test) {
         } else {
             http.reset(new HttpClient(config));
         }
-        const std::string request = BuildRequest(test);
+        const std::string request = BuildRequest(config, test);
         {
             std::lock_guard<std::mutex> lock(sampleMutex);
             if (sampleRequest.empty()) sampleRequest = request;
