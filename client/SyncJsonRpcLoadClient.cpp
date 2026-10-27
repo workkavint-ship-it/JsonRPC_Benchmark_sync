@@ -44,7 +44,7 @@ struct Config {
     std::string tier = "single";
     std::string size = "5KB";
     int clients = 100;
-    int iterations = 10;
+    int iterations = 1;
     int warmup = 0;
     std::string host = "127.0.0.1";
     int port = 9998;
@@ -202,6 +202,11 @@ static void EmitJson(const std::string& line, bool printStdout) {
 static void PrintProgress(const std::string& line) {
     std::lock_guard<std::mutex> lock(outputMutex);
     std::cout << line << std::endl;
+}
+
+static void LogClient(const std::string& line) {
+    std::lock_guard<std::mutex> lock(outputMutex);
+    std::cerr << line << std::endl;
 }
 
 static int ConnectTcp(const Config& config, std::string* error) {
@@ -638,7 +643,7 @@ static RunStats RunTest(const Config& config, const TestCase& test) {
             }
         });
     }
-    auto client = [&] {
+    auto client = [&](int clientIndex) {
         std::unique_ptr<WsClient> ws;
         std::unique_ptr<HttpClient> http;
         std::string error;
@@ -647,6 +652,9 @@ static RunStats RunTest(const Config& config, const TestCase& test) {
             ws.reset(new WsClient(config));
             if (!ws->Open(&error)) {
                 connectionReady = false;
+                if (config.logRequestResponse) {
+                    LogClient("[client " + std::to_string(clientIndex) + "] connect failed: " + error);
+                }
             }
         } else {
             http.reset(new HttpClient(config));
@@ -670,13 +678,40 @@ static RunStats RunTest(const Config& config, const TestCase& test) {
         }
         for (int iteration = 0; iteration < config.iterations; ++iteration) {
             startBarrier.Wait();
+            if (config.logRequestResponse) {
+                LogClient("[client " + std::to_string(clientIndex) + "] >> sent " + test.method + config.methodSuffix);
+            }
+            if (!connectionReady) {
+                if (config.logRequestResponse) {
+                    LogClient("[client " + std::to_string(clientIndex) + "] << ipc timeout (no connection)");
+                }
+                ++failed;
+                std::lock_guard<std::mutex> roundLock(roundMutex);
+                ++roundFailed[static_cast<size_t>(iteration)];
+                doneBarrier.Wait();
+                continue;
+            }
             const auto start = std::chrono::steady_clock::now();
             std::string response;
-            const bool ok = connectionReady && call(&response) && IsSuccess(response);
+            const bool callOk = call(&response);
             const auto end = std::chrono::steady_clock::now();
+            const bool ok = callOk && IsSuccess(response);
             if (!response.empty()) {
                 std::lock_guard<std::mutex> lock(sampleMutex);
                 if (sampleResponse.empty()) sampleResponse = response;
+            }
+            if (config.logRequestResponse) {
+                if (!callOk) {
+                    // Send/recv itself failed (timed out, connection closed, etc.)
+                    // - no JSON-RPC response ever arrived at all.
+                    LogClient("[client " + std::to_string(clientIndex) + "] << ipc timeout (" + error + ")");
+                } else if (!ok) {
+                    // A response did arrive, but it's a JSON-RPC-level error,
+                    // not a transport/IPC failure - worth telling apart.
+                    LogClient("[client " + std::to_string(clientIndex) + "] << error response: " + response);
+                } else {
+                    LogClient("[client " + std::to_string(clientIndex) + "] << result null (success)");
+                }
             }
             if (!ok) {
                 ++failed;
@@ -694,7 +729,7 @@ static RunStats RunTest(const Config& config, const TestCase& test) {
     };
     std::vector<std::thread> clients;
     clients.reserve(static_cast<size_t>(config.clients));
-    for (int index = 0; index < config.clients; ++index) clients.emplace_back(client);
+    for (int index = 0; index < config.clients; ++index) clients.emplace_back(client, index);
     for (int iteration = 0; iteration < config.iterations; ++iteration) {
         if (config.progressOutput) {
             std::ostringstream line;
