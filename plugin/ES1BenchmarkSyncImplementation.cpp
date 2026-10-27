@@ -57,74 +57,74 @@ namespace Plugin {
 
     SERVICE_REGISTRATION(ES1BenchmarkSyncImplementation, 1, 0);
 
-    uint32_t ES1BenchmarkSyncImplementation::SetString(const string& /* value */) { std::this_thread::sleep_for(std::chrono::seconds(5)); return Core::ERROR_NONE; }
-    uint32_t ES1BenchmarkSyncImplementation::SetArray(const std::vector<uint8_t>& /* value */) { std::this_thread::sleep_for(std::chrono::seconds(5)); return Core::ERROR_NONE; }
-    uint32_t ES1BenchmarkSyncImplementation::SetMixedArray(const std::vector<Exchange::IES1BenchmarkSync::MixedElement>& /* value */) { std::this_thread::sleep_for(std::chrono::seconds(5)); return Core::ERROR_NONE; }
-    uint32_t ES1BenchmarkSyncImplementation::SetNestedObjects(const std::vector<Exchange::IES1BenchmarkSync::NestedObject>& /* value */) { std::this_thread::sleep_for(std::chrono::seconds(5)); return Core::ERROR_NONE; }
-    uint32_t ES1BenchmarkSyncImplementation::SetUint32(const uint32_t /* value */) { std::this_thread::sleep_for(std::chrono::seconds(5)); return Core::ERROR_NONE; }
-    uint32_t ES1BenchmarkSyncImplementation::SetUint64(const uint64_t /* value */) { std::this_thread::sleep_for(std::chrono::seconds(5)); return Core::ERROR_NONE; }
-    uint32_t ES1BenchmarkSyncImplementation::SetBool(const bool /* value */) { std::this_thread::sleep_for(std::chrono::seconds(5)); return Core::ERROR_NONE; }
-    uint32_t ES1BenchmarkSyncImplementation::SetFloat(const float /* value */) { std::this_thread::sleep_for(std::chrono::seconds(5)); return Core::ERROR_NONE; }
-    uint32_t ES1BenchmarkSyncImplementation::SetDouble(const double /* value */) { std::this_thread::sleep_for(std::chrono::seconds(5)); return Core::ERROR_NONE; }
+    uint32_t ES1BenchmarkSyncImplementation::SetString(const string& /* value */) { std::this_thread::sleep_for(std::chrono::seconds(3)); return Core::ERROR_NONE; }
+    uint32_t ES1BenchmarkSyncImplementation::SetArray(const std::vector<uint8_t>& /* value */) { std::this_thread::sleep_for(std::chrono::seconds(3)); return Core::ERROR_NONE; }
+    uint32_t ES1BenchmarkSyncImplementation::SetMixedArray(const std::vector<Exchange::IES1BenchmarkSync::MixedElement>& /* value */) { std::this_thread::sleep_for(std::chrono::seconds(3)); return Core::ERROR_NONE; }
+    uint32_t ES1BenchmarkSyncImplementation::SetNestedObjects(const std::vector<Exchange::IES1BenchmarkSync::NestedObject>& /* value */) { std::this_thread::sleep_for(std::chrono::seconds(3)); return Core::ERROR_NONE; }
+    uint32_t ES1BenchmarkSyncImplementation::SetUint32(const uint32_t /* value */) { std::this_thread::sleep_for(std::chrono::seconds(3)); return Core::ERROR_NONE; }
+    uint32_t ES1BenchmarkSyncImplementation::SetUint64(const uint64_t /* value */) { std::this_thread::sleep_for(std::chrono::seconds(3)); return Core::ERROR_NONE; }
+    uint32_t ES1BenchmarkSyncImplementation::SetBool(const bool /* value */) { std::this_thread::sleep_for(std::chrono::seconds(3)); return Core::ERROR_NONE; }
+    uint32_t ES1BenchmarkSyncImplementation::SetFloat(const float /* value */) { std::this_thread::sleep_for(std::chrono::seconds(3)); return Core::ERROR_NONE; }
+    uint32_t ES1BenchmarkSyncImplementation::SetDouble(const double /* value */) { std::this_thread::sleep_for(std::chrono::seconds(3)); return Core::ERROR_NONE; }
 
     uint32_t ES1BenchmarkSyncImplementation::GetString(const uint32_t size, string& value) {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         value.resize(size);
         std::memcpy(&value[0], s_staticCharBuffer.data(), size);
         return Core::ERROR_NONE;
     }
 
     uint32_t ES1BenchmarkSyncImplementation::GetArray(const uint32_t size, std::vector<uint8_t>& value) {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         value.resize(size);
         std::memcpy(value.data(), s_staticByteBuffer.data(), size);
         return Core::ERROR_NONE;
     }
 
     uint32_t ES1BenchmarkSyncImplementation::GetMixedArray(const uint32_t count, std::vector<Exchange::IES1BenchmarkSync::MixedElement>& value) {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         value.assign(s_staticMixedVec.begin(), s_staticMixedVec.begin() + count);
         return Core::ERROR_NONE;
     }
 
     uint32_t ES1BenchmarkSyncImplementation::GetNestedObjects(const uint32_t count, std::vector<Exchange::IES1BenchmarkSync::NestedObject>& value) {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         value.assign(s_staticNestedVec.begin(), s_staticNestedVec.begin() + count);
         return Core::ERROR_NONE;
     }
 
     uint32_t ES1BenchmarkSyncImplementation::GetUint32(uint32_t& value) {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         std::memcpy(&value, &s_staticUint32, sizeof(value));
         return Core::ERROR_NONE;
     }
 
     uint32_t ES1BenchmarkSyncImplementation::GetUint64(uint64_t& value) {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         std::memcpy(&value, &s_staticUint64, sizeof(value));
         return Core::ERROR_NONE;
     }
 
     uint32_t ES1BenchmarkSyncImplementation::GetBool(bool& value) {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         std::memcpy(&value, &s_staticBool, sizeof(value));
         return Core::ERROR_NONE;
     }
 
     uint32_t ES1BenchmarkSyncImplementation::GetFloat(float& value) {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         std::memcpy(&value, &s_staticFloat, sizeof(value));
         return Core::ERROR_NONE;
     }
 
     uint32_t ES1BenchmarkSyncImplementation::GetDouble(double& value) {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         std::memcpy(&value, &s_staticDouble, sizeof(value));
         return Core::ERROR_NONE;
     }
 
     uint32_t ES1BenchmarkSyncImplementation::MeasureCopyCost(const uint32_t size, uint64_t& us) {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         std::vector<uint8_t> destination;
         const auto start = std::chrono::steady_clock::now();
         destination.resize(size);
@@ -135,7 +135,7 @@ namespace Plugin {
     }
 
     uint32_t ES1BenchmarkSyncImplementation::MeasureStringResizeCost(const uint32_t size, uint64_t& us) {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         string destination;
         const auto start = std::chrono::steady_clock::now();
         destination.resize(size);
@@ -146,7 +146,7 @@ namespace Plugin {
     }
 
     uint32_t ES1BenchmarkSyncImplementation::MeasureMixedAssignCost(const uint32_t count, uint64_t& us) {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         std::vector<Exchange::IES1BenchmarkSync::MixedElement> destination;
         const auto start = std::chrono::steady_clock::now();
         destination.assign(s_staticMixedVec.begin(), s_staticMixedVec.begin() + count);
@@ -156,7 +156,7 @@ namespace Plugin {
     }
 
     uint32_t ES1BenchmarkSyncImplementation::MeasureNestedAssignCost(const uint32_t count, uint64_t& us) {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
         std::vector<Exchange::IES1BenchmarkSync::NestedObject> destination;
         const auto start = std::chrono::steady_clock::now();
         destination.assign(s_staticNestedVec.begin(), s_staticNestedVec.begin() + count);
