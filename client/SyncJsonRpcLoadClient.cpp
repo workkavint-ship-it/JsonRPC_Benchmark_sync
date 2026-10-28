@@ -629,6 +629,7 @@ static RunStats RunTest(const Config& config, const TestCase& test) {
     ReusableBarrier doneBarrier(static_cast<size_t>(config.clients) + 1);
     std::vector<int> roundSuccess(static_cast<size_t>(config.iterations), 0);
     std::vector<int> roundFailed(static_cast<size_t>(config.iterations), 0);
+    std::vector<int> roundSent(static_cast<size_t>(config.iterations), 0);
     std::mutex sampleMutex;
     std::string sampleRequest;
     std::string sampleResponse;
@@ -681,9 +682,18 @@ static RunStats RunTest(const Config& config, const TestCase& test) {
             if (config.logRequestResponse) {
                 LogClient("[client " + std::to_string(clientIndex) + "] >> sent " + test.method + config.methodSuffix);
             }
+            {
+                std::lock_guard<std::mutex> roundLock(roundMutex);
+                ++roundSent[static_cast<size_t>(iteration)];
+                if (roundSent[static_cast<size_t>(iteration)] == config.clients) {
+                    LogClient("[progress] sent " + std::to_string(roundSent[static_cast<size_t>(iteration)])
+                        + " out of " + std::to_string(config.clients) + " clients");
+                    LogClient("[progress] waiting for responses from all " + std::to_string(config.clients) + " clients...");
+                }
+            }
             if (!connectionReady) {
                 if (config.logRequestResponse) {
-                    LogClient("[client " + std::to_string(clientIndex) + "] << ipc timeout (no connection)");
+                    LogClient("[client " + std::to_string(clientIndex) + "] << request timed out (no connection)");
                 }
                 ++failed;
                 std::lock_guard<std::mutex> roundLock(roundMutex);
@@ -704,7 +714,7 @@ static RunStats RunTest(const Config& config, const TestCase& test) {
                 if (!callOk) {
                     // Send/recv itself failed (timed out, connection closed, etc.)
                     // - no JSON-RPC response ever arrived at all.
-                    LogClient("[client " + std::to_string(clientIndex) + "] << ipc timeout (" + error + ")");
+                    LogClient("[client " + std::to_string(clientIndex) + "] << request timed out (" + error + ")");
                 } else if (!ok) {
                     // A response did arrive, but it's a JSON-RPC-level error,
                     // not a transport/IPC failure - worth telling apart.
@@ -743,9 +753,9 @@ static RunStats RunTest(const Config& config, const TestCase& test) {
             std::lock_guard<std::mutex> lock(roundMutex);
             std::ostringstream line;
             line << "Iteration " << (iteration + 1) << "/" << config.iterations
-                 << ": received all responses | successful="
-                 << roundSuccess[static_cast<size_t>(iteration)]
-                 << " failed=" << roundFailed[static_cast<size_t>(iteration)];
+                 << ": received " << roundSuccess[static_cast<size_t>(iteration)]
+                 << " out of " << config.clients << " | failed="
+                 << roundFailed[static_cast<size_t>(iteration)];
             PrintProgress(line.str());
         }
     }
